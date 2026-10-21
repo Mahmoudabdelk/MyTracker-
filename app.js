@@ -172,138 +172,27 @@
   let confirmCallback = null;
 
   function seed() {
+    // Project-based seed. Technical placeholders are NOT verified employment facts.
     const rows = [
-      ['سارة أحمد', 'مديرة التصميم', 'التصميم', 'sara', 22000, '2025-01-12'],
-      [
-        'أحمد محمود',
-        'مطور واجهات',
-        'التكنولوجيا',
-        'ahmed',
-        25000,
-        '2025-03-02',
-      ],
-      [
-        'نور خالد',
-        'أخصائية موارد بشرية',
-        'الموارد البشرية',
-        'nour',
-        17000,
-        '2025-05-18',
-      ],
-      ['عمر حسن', 'مسؤول تسويق', 'التسويق', 'omar', 16000, '2025-06-01'],
-      [
-        'مريم علي',
-        'مصممة تجربة مستخدم',
-        'التصميم',
-        'mariam',
-        19500,
-        '2025-07-14',
-      ],
-      [
-        'يوسف إبراهيم',
-        'مطور برمجيات',
-        'التكنولوجيا',
-        'youssef',
-        24000,
-        '2025-08-03',
-      ],
-      ['سلمى محمد', 'محاسبة', 'المالية', 'salma', 18000, '2025-09-21'],
-      [
-        'خالد مصطفى',
-        'مدير المبيعات',
-        'المبيعات',
-        'khaled',
-        23000,
-        '2025-10-05',
-      ],
-      ['هنا أشرف', 'كاتبة محتوى', 'التسويق', 'hana', 14500, '2025-11-10'],
-      [
-        'علي سمير',
-        'مهندس ضمان جودة',
-        'التكنولوجيا',
-        'ali',
-        20000,
-        '2025-12-01',
-      ],
-      ['دينا عمرو', 'أخصائية مبيعات', 'المبيعات', 'dina', 15500, '2026-01-18'],
-      ['محمد عادل', 'مدير عمليات', 'العمليات', 'mohamed', 26000, '2026-02-02'],
-    ];
-    const employees = rows.map((r, i) => ({
-      id: `demo-${i + 1}`,
-      code: `HR-${String(i + 1).padStart(3, '0')}`,
-      name: r[0],
-      title: r[1],
-      department: r[2],
-      email: `${r[3]}@example.com`,
-      salary: r[4],
-      startDate: r[5],
-      phone: '',
-      status: 'active',
-      contract: 'full',
-    }));
-    const attendance = [];
-    for (let offset = -6; offset <= 0; offset++) {
-      const date = addDays(today(), offset);
-      employees.forEach((e, i) => {
-        const n = (i - offset) % 12;
-        const status =
-          n === 10
-            ? 'absent'
-            : n === 4
-              ? 'leave'
-              : n === 1 || n === 7
-                ? 'late'
-                : 'present';
-        attendance.push({
-          employeeId: e.id,
-          date,
-          status,
-          checkIn:
-            status === 'present' ? '08:55' : status === 'late' ? '09:25' : '',
-          checkOut:
-            offset < 0 && ['present', 'late'].includes(status) ? '17:00' : '',
-        });
-      });
-    }
-    const leaves = [
-      {
-        id: 'demo-leave-1',
-        employeeId: 'demo-1',
-        type: 'سنوية',
-        from: addDays(today(), 3),
-        to: addDays(today(), 5),
-        reason: 'إجازة عائلية',
-        status: 'pending',
-        createdAt: addDays(today(), -1),
-      },
-      {
-        id: 'demo-leave-2',
-        employeeId: 'demo-4',
-        type: 'شخصية',
-        from: addDays(today(), 2),
-        to: addDays(today(), 2),
-        reason: 'إنهاء إجراءات شخصية',
-        status: 'pending',
-        createdAt: today(),
-      },
-      {
-        id: 'demo-leave-3',
-        employeeId: 'demo-5',
-        type: 'سنوية',
-        from: today(),
-        to: today(),
-        reason: 'إجازة مخطط لها',
-        status: 'approved',
-        createdAt: addDays(today(), -4),
-      },
+      ['مالك النشاط','المدير العام والمالية','الإدارة','owner','full'],
+      ['عمر يحيى','Media Buyer وبحث المنتجات','التسويق','omar','full'],
+      ['إسراء','خدمة العملاء وإدخال الطلبات','العمليات وخدمة العملاء','israa','full'],
+      ['مسؤول الكرياتيف (الاسم غير متاح)','إعداد وتنفيذ المحتوى الإعلاني','الكرياتيف','creative','full'],
+      ['فريد','إنتاج المحتوى','المحتوى','farid','contractor'],
+      ['محمد إسماعيل','Amazon Research & Operations','Amazon','mohamed','contractor']
     ];
     return {
       version: 1,
       demo: true,
-      settings: { company: 'شركتي', currency: 'EGP' },
-      employees,
-      attendance,
-      leaves,
+      settings: { company: 'AI Growth | Hit & Run & Mellow', currency: 'EGP' },
+      employees: rows.map((r,i)=>({
+        id: 'project-'+(i+1),code:'TEAM-'+String(i+1).padStart(3,'0'),
+        name:r[0],title:r[1],department:r[2],
+        email:r[3]+'@example.com',phone:'',salary:0,
+        startDate:'2026-10-21',status:'active',contract:r[4]
+      })),
+      attendance: [],
+      leaves: []
     };
   }
 
@@ -421,6 +310,9 @@
       if (raw) {
         const parsed = JSON.parse(raw);
         if (!validState(parsed)) throw new Error('invalid saved data');
+        if (parsed.demo && parsed.employees.length === 12 && parsed.employees.every(e => String(e.id).startsWith('demo-'))) {
+          const fresh = seed(); localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh)); return fresh;
+        }
         return parsed;
       }
       const initial = seed();
@@ -706,6 +598,7 @@
     $('#page-description').textContent = description;
     $('#breadcrumb-current').textContent = title;
     $('#workspace-name').textContent = state.settings.company;
+    // Seed values of 0 salary and 2026-10-21 dates are technical placeholders, not facts.
     document.title = `${title} | فريق`;
     $$('[data-view]').forEach((a) => {
       const active = a.dataset.view === ui.view;
