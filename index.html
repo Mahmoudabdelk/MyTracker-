@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#142f2a" />
+    <meta
+      name="description"
+      content="فريق — مساحة بسيطة لإدارة الموظفين والحضور والإجازات باللغة العربية."
+    />
+    <title>فريق | إدارة الموارد البشرية</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <button
+      class="mobile-overlay"
+      id="mobile-overlay"
+      aria-label="إغلاق القائمة"
+      hidden
+    ></button>
+    <aside class="sidebar" id="sidebar" aria-label="القائمة الرئيسية">
+      <a class="brand" href="#dashboard" aria-label="فريق، الصفحة الرئيسية">
+        <span class="brand-mark" aria-hidden="true"
+          ><i></i><i></i><i></i><i></i
+        ></span>
+        <span>فريق<span class="brand-caption">مساحة تنمو بفريقك</span></span>
+      </a>
+      <div class="workspace">
+        <span class="workspace-avatar">ش</span>
+        <div>
+          <strong id="workspace-name">شركتي</strong
+          ><span>مساحة إدارة الموارد البشرية</span>
+        </div>
+        <span class="workspace-dot" title="مساحة محلية"></span>
+      </div>
+      <p class="nav-label">مساحة العمل</p>
+      <nav id="navigation">
+        <a href="#dashboard" data-view="dashboard"
+          ><span data-icon="grid"></span>نظرة عامة</a
+        >
+        <a href="#employees" data-view="employees"
+          ><span data-icon="users"></span>الموظفون<span
+            class="nav-count"
+            id="nav-count"
+            >0</span
+          ></a
+        >
+        <a href="#attendance" data-view="attendance"
+          ><span data-icon="clock"></span>الحضور والانصراف</a
+        >
+        <a href="#leaves" data-view="leaves"
+          ><span data-icon="calendar"></span>طلبات الإجازة<span
+            class="nav-pending"
+            id="nav-pending"
+            hidden
+          ></span
+        ></a>
+        <a href="#reports" data-view="reports"
+          ><span data-icon="chart"></span>التقارير</a
+        >
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="local-note">
+          <span data-icon="shield"></span><strong>مساحتك، على جهازك</strong>
+          <p>
+            البيانات محفوظة في هذا المتصفح. صدّر نسخة احتياطية للاحتفاظ بها.
+          </p>
+          <button class="sidebar-export" data-action="backup">
+            تنزيل نسخة احتياطية <span data-icon="download"></span>
+          </button>
+        </div>
+        <a class="settings-link" href="#settings" data-view="settings"
+          ><span data-icon="settings"></span>إعدادات المساحة</a
+        >
+        <div class="sidebar-profile">
+          <span class="profile-avatar">م</span>
+          <div>
+            <strong>مسؤول الموارد البشرية</strong
+            ><span>إدارة المساحة المحلية</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="breadcrumb">
+          <button
+            class="icon-button mobile-menu"
+            id="menu-toggle"
+            aria-label="فتح القائمة"
+            aria-expanded="false"
+            aria-controls="sidebar"
+          >
+            <span data-icon="menu"></span></button
+          ><span>مساحة العمل</span><span class="breadcrumb-divider">/</span
+          ><strong id="breadcrumb-current">نظرة عامة</strong>
+        </div>
+        <div class="topbar-actions">
+          <label class="global-search"
+            ><span data-icon="search"></span
+            ><input
+              id="global-search"
+              type="search"
+              placeholder="ابحث عن موظف أو قسم..."
+              aria-label="البحث عن موظف أو قسم"
+            /><kbd aria-hidden="true">/</kbd></label
+          ><span class="topbar-separator"></span
+          ><span class="admin-avatar" title="مسؤول الموارد البشرية">م</span>
+        </div>
+      </header>
+      <main id="main-content">
+        <div class="page-heading">
+          <div>
+            <div class="eyebrow" id="page-eyebrow">كل يوم، فريق أفضل</div>
+            <h1 id="page-title" tabindex="-1">
+              نظرة عامة<span class="heading-dot">.</span>
+            </h1>
+            <p id="page-description">
+              صورة واضحة عن فريقك، وكل ما يحتاج انتباهك اليوم.
+            </p>
+          </div>
+          <div id="page-actions"></div>
+        </div>
+        <div class="storage-warning" id="storage-warning" role="alert" hidden>
+          تعذّر الوصول إلى التخزين. لن يتم حفظ التغييرات؛ اسمح للمتصفح بتخزين
+          بيانات الموقع ثم أعد تحميل الصفحة.
+        </div>
+        <div id="view-content"></div>
+        <footer class="page-footer">
+          <span
+            >فريق <span class="footer-dot">•</span> مساحة لأشخاص يصنعون
+            الفرق</span
+          ><span>نسخة محلية · بدون مزامنة بين الأجهزة</span>
+        </footer>
+      </main>
+    </div>
+    <dialog id="modal" aria-labelledby="modal-title">
+      <div id="modal-content"></div>
+    </dialog>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <noscript
+      ><p class="noscript">
+        فعّل JavaScript في متصفحك لتشغيل نظام فريق.
+      </p></noscript
+    >
+  </body>
+</html>
