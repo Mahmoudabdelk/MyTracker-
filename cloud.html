@@ -1,6 +1,6 @@
 <!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MyTracker Cloud</title><style>body{font-family:Tahoma,Arial;background:#f5f7f3;color:#203c31;margin:0}header{background:#183c33;color:white;padding:24px}main{max-width:900px;margin:auto;padding:20px}.card{background:white;border-radius:14px;padding:20px;margin:16px 0;border:1px solid #d9e3da}input,select,textarea,button{font:inherit;padding:10px;border:1px solid #cbd9cf;border-radius:8px;margin:5px;max-width:100%}button{background:#1d583d;color:white;cursor:pointer}button:disabled{opacity:.6}table{width:100%;border-collapse:collapse}td,th{padding:10px;border-bottom:1px solid #ddd;text-align:right}small{color:#60776a}.error{color:#b32929}.hide{display:none}</style><header><h1>MyTracker — المزامنة السحابية</h1><a style="color:white" href="index.html">العودة للموقع الأساسي</a></header><main><div id="state"></div><section class="card" id="auth"><h2>تسجيل الدخول</h2><input id="email" type="email" placeholder="البريد الإلكتروني"><input id="password" type="password" placeholder="كلمة المرور" minlength="8"><button id="login">دخول</button><button id="signup">إنشاء حساب</button><p><small>بعد أول تسجيل، يحتاج مدير المشروع تفعيل صلاحية Admin من Supabase SQL Editor. لا تدخل بيانات موظفين حساسة قبل ذلك.</small></p></section><section id="app" class="hide"><div class="card"><button id="logout">تسجيل خروج</button><h2>سجلات فريق AI Growth السحابية</h2><p id="who"></p><p>تُزامن السجلات بين الأجهزة بعد تسجيل الدخول إلى نفس المشروع. يسمح للمسؤول فقط بإضافة وتعديل وحذف السجلات.</p></div><section class="card"><h3>إضافة سجل</h3><select id="kind"><option value="employee">موظف / متعاون</option><option value="attendance">حضور</option><option value="leave">إجازة</option></select><input id="label" placeholder="الاسم أو وصف السجل"><input id="detail" placeholder="تفاصيل، دون بيانات حساسة"><button id="add">حفظ بالسحابة</button></section><section class="card"><h3>السجلات</h3><button id="refresh">تحديث</button><div id="records"></div></section></section></main><script type="module">
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
-const db=createClient('https://micmyrwmhibvkenhfpya.supabase.co','sb_publishable_2FeHIwnNKQXxaDVP6S1AuA_fsJIJhcj');
+const db=createClient('https://micmyrwmhibvkenhfpya.supabase.co','sb_publishable_2FeHIwnNKQXxaDVP6S1AuA_fsJIJhcj',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'mytracker-cloud-auth-v1'}});
 const el=id=>document.getElementById(id),msg=(s,bad=false)=>{el('state').textContent=s;el('state').className=bad?'error':''};let current=null;
 function showSession(session){current=session?.user||null;el('auth').classList.toggle('hide',Boolean(current));el('app').classList.toggle('hide',!current);if(current){el('who').textContent='المستخدم: '+current.email;refresh()}else{el('who').textContent=''}}
 async function refresh(){const {data,error}=await db.from('hr_records').select('id,kind,data,updated_at').order('updated_at',{ascending:false});if(error){msg('تعذر قراءة البيانات: '+error.message,true);return}const wrap=el('records');wrap.replaceChildren();for(const row of data){const div=document.createElement('div');div.className='card';const h=document.createElement('strong');h.textContent=(row.data?.label||'سجل')+' — '+row.kind;const p=document.createElement('p');p.textContent=row.data?.detail||'';const b=document.createElement('button');b.textContent='حذف';b.onclick=async()=>{if(!confirm('حذف السجل؟'))return;const {error}=await db.from('hr_records').delete().eq('id',row.id);if(error)msg(error.message,true);else refresh()};div.append(h,p,b);wrap.append(div)}if(!data.length)wrap.textContent='لا توجد سجلات بعد.'}
@@ -9,6 +9,21 @@ el('signup').onclick=async()=>{const {error}=await db.auth.signUp({email:el('ema
 el('logout').onclick=async()=>{const {error}=await db.auth.signOut();if(error)msg(error.message,true)};
 el('refresh').onclick=refresh;
 el('add').onclick=async()=>{if(!el('label').value.trim())return msg('أدخل اسم السجل',true);const {error}=await db.from('hr_records').insert({owner_id:current.id,kind:el('kind').value,data:{label:el('label').value.trim(),detail:el('detail').value.trim()}});if(error)msg('تعذر الحفظ: '+error.message,true);else {el('label').value='';el('detail').value='';msg('تم الحفظ في السحابة');refresh()}};
-db.auth.onAuthStateChange((event,session)=>{showSession(session);if(event==='SIGNED_OUT')msg('تم تسجيل الخروج')});
-db.auth.getSession().then(({data,error})=>{if(error)msg(error.message,true);else showSession(data.session)});
+let lastUserId=null;
+function applyAuth(event,session){
+  if(session?.user){
+    const id=session.user.id;
+    if(id!==lastUserId){lastUserId=id;showSession(session)}
+    else {current=session.user;el('who').textContent='المستخدم: '+session.user.email}
+    if(event==='TOKEN_REFRESHED')msg('تم تجديد جلسة الدخول');
+    return;
+  }
+  // Do not clear a valid session during initialization or transient token refresh.
+  if(event==='SIGNED_OUT'||event==='USER_DELETED'){
+    lastUserId=null;showSession(null);msg('تم تسجيل الخروج');
+  } else if(event==='INITIAL_SESSION'&&!lastUserId){showSession(null)}
+}
+db.auth.onAuthStateChange((event,session)=>{applyAuth(event,session)});
+db.auth.getSession().then(({data,error})=>{if(error)msg('تعذر فحص الجلسة: '+error.message,true);else if(data.session?.user)applyAuth('RESTORED_SESSION',data.session)});
+window.addEventListener('online',()=>{if(current)msg('عاد الاتصال بالإنترنت')});
 </script></html>
