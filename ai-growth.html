@@ -200,7 +200,7 @@ function renderCloudDashboard(){
  const status=document.getElementById('dashCloudStatus'),body=document.getElementById('dashBreakdown');
  body.replaceChildren();
  if(!cloudMode||!cloudUser){document.getElementById('dashQuality').textContent='لم يتم تحميل البيانات من Supabase.';status.textContent='لا توجد جلسة سحابية صالحة أو تعذر تحميل سجلات التشغيل. لا تُعرض أرقام تاريخية على أنها بيانات حية.';for(const id of ['dashRevenue','dashContribution','dashDeliveries','dashReturns'])document.getElementById(id).textContent='—';const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.textContent='سجّل الدخول ثم حدّث السجلات السحابية.';tr.append(td);body.append(tr);return}
- const skuList=[...new Set(operations.map(x=>canonicalSKU(x.sku)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ar'));const picker=document.getElementById('skuFilter');const selected=activeSKU||picker.value;picker.replaceChildren();const all=document.createElement('option');all.value='';all.textContent='كل المنتجات — مجمّع';picker.append(all);for(const s of skuList){const o=document.createElement('option');o.value=s;o.textContent=s;picker.append(o)}picker.value=skuList.includes(selected)?selected:'';activeSKU=picker.value;document.getElementById('skuCount').textContent=skuList.length+' SKU';const chosen=activeSKU;const filtered=chosen?operations.filter(x=>canonicalSKU(x.sku)===chosen):operations;let revenue=0,margin=0,delivered=0,orders=0,returned=0;const groups=new Map();
+ const skuList=[...new Set(operations.map(x=>canonicalSKU(x.sku)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ar'));const picker=document.getElementById('skuFilter');const selected=activeSKU||picker.value;picker.replaceChildren();const all=document.createElement('option');all.value='';all.textContent='كل المنتجات — مجمّع';picker.append(all);for(const s of skuList){const o=document.createElement('option');o.value=s;o.textContent=skuDisplay(s);o.title=s;picker.append(o)}picker.value=skuList.includes(selected)?selected:'';activeSKU=picker.value;document.getElementById('skuCount').textContent=skuList.length+' SKU';const chosen=activeSKU;const filtered=chosen?operations.filter(x=>canonicalSKU(x.sku)===chosen):operations;let revenue=0,margin=0,delivered=0,orders=0,returned=0;const groups=new Map();
  for(const x of filtered){const m=metrics(x);revenue+=m.revenue;margin+=m.margin;delivered+=amount(x.delivered);orders+=amount(x.orders);returned+=amount(x.returned);const k=JSON.stringify([canonicalSKU(x.sku),x.channel]);if(!groups.has(k))groups.set(k,{sku:x.sku,channel:x.channel,revenue:0,delivered:0,margin:0});const g=groups.get(k);g.revenue+=m.revenue;g.delivered+=amount(x.delivered);g.margin+=m.margin}
  document.getElementById('dashRevenue').textContent=revenue.toLocaleString('en-US');
  document.getElementById('dashContribution').textContent=margin.toLocaleString('en-US');
@@ -217,13 +217,15 @@ document.getElementById('skuFilter').onchange=()=>{activeSKU=document.getElement
 document.getElementById('dashToOps').onclick=()=>show('operations');document.getElementById('dashRefresh').onclick=()=>{if(cloudUser)loadCloud();else renderCloudDashboard()};
 renderCloudDashboard();
 
+function skuDisplay(raw){const s=canonicalSKU(raw);if(!s)return 'منتج غير معروف';const pieces=s.split(/\s*(?:,|،|;|\||\+|\n)\s*/).filter(Boolean);const piece=pieces[0]||s;return piece.length>68?piece.slice(0,68)+'…':piece}
+function isCombinedSKU(raw){const s=canonicalSKU(raw);return s.length>100||(/(?:4242|\d{3,4})/.test(s)&&s.split(/[,،;]/).length>2)}
 function updateOperationSkuSelectors(){
  const names=[...new Set(operations.map(x=>canonicalSKU(x.sku)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ar'));
  const sel=document.getElementById('opsSkuFilter'),entry=document.getElementById('opsEntrySku');
  sel.replaceChildren();entry.replaceChildren();const all=document.createElement('option');all.value='';all.textContent='كل المنتجات — مجمّع';sel.append(all);const blank=document.createElement('option');blank.value='';blank.textContent='اكتب منتج جديد أو اختار موجود';entry.append(blank);
- for(const name of names){const a=document.createElement('option');a.value=name;a.textContent=name;sel.append(a);const b=document.createElement('option');b.value=name;b.textContent=name;entry.append(b)}
+ for(const name of names){const a=document.createElement('option');a.value=name;a.textContent=skuDisplay(name);a.title=name;sel.append(a);const b=document.createElement('option');b.value=name;b.textContent=skuDisplay(name);b.title=name;entry.append(b)}
  if(activeSKU&&!names.includes(activeSKU))activeSKU='';sel.value=activeSKU;
- document.getElementById('opsFilterStatus').textContent=(activeSKU?'المنتج: '+activeSKU:'كل المنتجات')+' · '+filteredOps().length+' سجل من '+operations.length+' إجمالي';
+ document.getElementById('opsFilterStatus').textContent=(activeSKU?'المنتج: '+skuDisplay(activeSKU):'كل المنتجات')+' · '+filteredOps().length+' سجل من '+operations.length+' إجمالي'+(operations.some(x=>isCombinedSKU(x.sku))?' · تنبيه: توجد سجلات بأسماء منتجات مركبة تحتاج فصلًا من المصدر.':'');
 }
 const priorSKUOps=renderOps;
 renderOps=function(){updateOperationSkuSelectors();priorSKUOps();};
