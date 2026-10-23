@@ -47,14 +47,14 @@ body.authenticated #loginGate{display:none}
 <main><div class="top"><div><div class="eyebrow">AI GROWTH / PROJECT WORKSPACE</div><h1 id="heading">لوحة القيادة الاستراتيجية</h1></div><span class="pill">PROPOSED • OCT 2026</span></div>
 <p class="light" id="desc">من تشخيص الأداء إلى اختيار الاستراتيجية ثم التنفيذ والقياس — بناءً على مشروع الشركة الفعلي ومراجع د. فؤاد حسين.</p>
 <section class="section active" id="dashboard">
-<div class="note" id="dashCloudStatus">جاري التحقق من بيانات Supabase... ستظهر هنا البيانات المسجلة في قسم التشغيل، وليس الأرقام التاريخية.</div>
+<div class="note"><b>لوحة القيادة المباشرة</b> — هذا هو الـDashboard الرئيسي. <button class="ghost" id="dashToOps" type="button">فتح سجلات التشغيل</button></div><div class="note" id="dashCloudStatus">جاري التحقق من بيانات Supabase... ستظهر هنا البيانات المسجلة في قسم التشغيل، وليس الأرقام التاريخية.</div>
 <div class="grid">
 <div class="card"><div class="metriclabel">مبيعات مسلّمة (سحابي)</div><div class="metric" id="dashRevenue">—</div><div class="stamp">جنيه · حسب السجلات المحفوظة</div></div>
 <div class="card"><div class="metriclabel">مساهمة بعد المتغيرات (سحابي)</div><div class="metric" id="dashContribution">—</div><div class="stamp">جنيه · قبل المصروفات الثابتة</div></div>
 <div class="card"><div class="metriclabel">طلبات مسلّمة / إجمالي طلبات</div><div class="metric" id="dashDeliveries">—</div><div class="stamp">سجلات التشغيل السحابية</div></div>
 <div class="card"><div class="metriclabel">مرتجعات مسجلة</div><div class="metric" id="dashReturns">—</div><div class="stamp">سجلات التشغيل السحابية</div></div>
 </div>
-<div class="card"><h2>تحليل السحابة حسب المنتج والقناة</h2><div class="tablewrap"><table><thead><tr><th>المنتج</th><th>القناة</th><th>المبيعات</th><th>المسلّمة</th><th>مساهمة بعد المتغيرات</th></tr></thead><tbody id="dashBreakdown"><tr><td colspan="5">سجّل الدخول لتحميل النتائج.</td></tr></tbody></table></div><p><button id="dashRefresh" class="ghost">تحديث البيانات من السحابة</button></p></div>
+<div class="card"><h2>جودة البيانات السحابية</h2><p id="dashQuality" class="light">جاري فحص الحقول...</p></div><div class="card"><h2>تحليل السحابة حسب المنتج والقناة</h2><div class="tablewrap"><table><thead><tr><th>المنتج</th><th>القناة</th><th>المبيعات</th><th>المسلّمة</th><th>مساهمة بعد المتغيرات</th></tr></thead><tbody id="dashBreakdown"><tr><td colspan="5">سجّل الدخول لتحميل النتائج.</td></tr></tbody></table></div><p><button id="dashRefresh" class="ghost">تحديث البيانات من السحابة</button></p></div>
 <div class="twocol"><div class="card"><h2>القرار الاستراتيجي المعتمد</h2><h3>Profitability-Led Turnaround</h3><p class="light">أولوية إصلاح الربحية والحفاظ على السيولة، قبل التوسع في الإيرادات. Hit & Run تجارة انتقائية مربحة، Mellow تمايز مشروط بالتحقق، والمنتجات الرقمية تجارب محدودة غير مثبتة.</p><div class="note">هذه لوحة عرض وتحليل، ولا تدّعي وجود اتصال حيّ ببيانات Meta أو Amazon أو Fulfillment.</div></div>
 <div class="card"><h2>منطق مشروع التخرج</h2><div class="flow"><div class="step">Diagnosis<br>تشخيص</div><div class="step">Options<br>بدائل</div><div class="step">Choice<br>اختيار</div><div class="step">Execution<br>تنفيذ</div><div class="step">BSC<br>قياس</div></div><p class="light">منهج الدكتور: Facts → Issues → Choices → Strategy → Actions → Results.</p></div></div>
 <div class="card"><h2>القنوات والأعمال</h2><div class="tablewrap"><table><tr><th>النشاط</th><th>النموذج</th><th>القرار</th><th>حالة البيانات</th></tr>
@@ -196,19 +196,19 @@ document.getElementById("opsGoImport").onclick=()=>document.getElementById("oper
 function renderCloudDashboard(){
  const status=document.getElementById('dashCloudStatus'),body=document.getElementById('dashBreakdown');
  body.replaceChildren();
- if(!cloudMode||!cloudUser){status.textContent='لا توجد جلسة سحابية صالحة أو تعذر تحميل سجلات التشغيل. لا تُعرض أرقام تاريخية على أنها بيانات حية.';for(const id of ['dashRevenue','dashContribution','dashDeliveries','dashReturns'])document.getElementById(id).textContent='—';const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.textContent='سجّل الدخول ثم حدّث السجلات السحابية.';tr.append(td);body.append(tr);return}
+ if(!cloudMode||!cloudUser){document.getElementById('dashQuality').textContent='لم يتم تحميل البيانات من Supabase.';status.textContent='لا توجد جلسة سحابية صالحة أو تعذر تحميل سجلات التشغيل. لا تُعرض أرقام تاريخية على أنها بيانات حية.';for(const id of ['dashRevenue','dashContribution','dashDeliveries','dashReturns'])document.getElementById(id).textContent='—';const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.textContent='سجّل الدخول ثم حدّث السجلات السحابية.';tr.append(td);body.append(tr);return}
  let revenue=0,margin=0,delivered=0,orders=0,returned=0;const groups=new Map();
  for(const x of operations){const m=metrics(x);revenue+=m.revenue;margin+=m.margin;delivered+=amount(x.delivered);orders+=amount(x.orders);returned+=amount(x.returned);const k=JSON.stringify([x.sku,x.channel]);if(!groups.has(k))groups.set(k,{sku:x.sku,channel:x.channel,revenue:0,delivered:0,margin:0});const g=groups.get(k);g.revenue+=m.revenue;g.delivered+=amount(x.delivered);g.margin+=m.margin}
  document.getElementById('dashRevenue').textContent=revenue.toLocaleString('en-US');
  document.getElementById('dashContribution').textContent=margin.toLocaleString('en-US');
  document.getElementById('dashDeliveries').textContent=delivered.toLocaleString('en-US')+' / '+orders.toLocaleString('en-US');
  document.getElementById('dashReturns').textContent=returned.toLocaleString('en-US');
- status.textContent='متصل بـSupabase: '+operations.length+' سجل تشغيل محمّل. هذه الأرقام محسوبة من السجلات المرفوعة، وليست تقارير Meta المباشرة.';
+ status.textContent='متصل بـSupabase: '+operations.length+' سجل تشغيل محمّل. هذه الأرقام محسوبة من السجلات المرفوعة، وليست تقارير Meta المباشرة.';const filled=operations.filter(x=>amount(x.orders)>0||amount(x.delivered)>0||amount(x.returned)>0||metrics(x).revenue>0).length;document.getElementById('dashQuality').textContent=operations.length+' سجل محفوظ، منهم '+filled+' سجل يحتوي طلبات أو تسليمات أو مبيعات قابلة للحساب. '+(filled===0&&operations.length?'كل السجلات المحمّلة بها أصفار في حقول الطلبات والتسليمات؛ راجع ربط أعمدة Excel أثناء الاستيراد.':'راجع قيم وتواريخ الأعمدة قبل اعتماد النتائج.');
  for(const g of [...groups.values()].sort((a,b)=>b.revenue-a.revenue)){const tr=document.createElement('tr');for(const v of [g.sku,g.channel,g.revenue.toFixed(2),g.delivered,g.margin.toFixed(2)]){const td=document.createElement('td');td.textContent=String(v);tr.append(td)}body.append(tr)}
  if(!groups.size){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.textContent='الاتصال ناجح لكن لا توجد سجلات في قاعدة البيانات بعد. أضف بيانات من قسم التشغيل.';tr.append(td);body.append(tr)}
 }
 const beforeDashRender=renderOps;
 renderOps=function(){beforeDashRender();renderCloudDashboard()};
-document.getElementById('dashRefresh').onclick=()=>{if(cloudUser)loadCloud();else renderCloudDashboard()};
+document.getElementById('dashToOps').onclick=()=>show('operations');document.getElementById('dashRefresh').onclick=()=>{if(cloudUser)loadCloud();else renderCloudDashboard()};
 renderCloudDashboard();
 </script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script></body></html>
